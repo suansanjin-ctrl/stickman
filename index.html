@@ -1,855 +1,100 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
-  <title>火柴人对决 - 原版风纯前端</title>
-  <style>
-    html,body{height:100%;margin:0;background:#08142a;color:#fff;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto;}
-    #wrap{height:100%;display:grid;place-items:center}
-    canvas{background:linear-gradient(#2c7cff,#1a4aa5);border-radius:14px;box-shadow:0 16px 60px rgba(0,0,0,.35);touch-action:none}
-    .ui{position:fixed;inset:0;pointer-events:none}
-    .topbar{position:absolute;left:16px;right:16px;top:14px;display:flex;gap:12px;justify-content:space-between;align-items:center}
-    .panel{background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.18);backdrop-filter: blur(6px);border-radius:12px;padding:10px 12px}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    .hpbar{width:220px;height:12px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}
-    .hpbar>div{height:100%;width:100%;background:linear-gradient(90deg,#34d399,#fbbf24,#ef4444)}
-    .score{font-weight:800;letter-spacing:1px}
-    .small{font-size:12px;opacity:.85}
-    .menu{position:absolute;inset:0;display:grid;place-items:center;pointer-events:auto}
-    .card{width:min(560px,92vw);background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:18px 16px 16px;backdrop-filter: blur(10px);}
-    h1{margin:0 0 10px;font-size:22px}
-    .btns{display:grid;gap:10px;margin-top:12px}
-    button{appearance:none;border:0;border-radius:12px;padding:14px 14px;font-size:18px;font-weight:800;color:#111;cursor:pointer}
-    button:active{transform:translateY(1px)}
-    .b1{background:#f7d44c}
-    .b2{background:#2ee66b}
-    .b3{background:#ef4444;color:#fff}
-    .opt{display:grid;gap:10px;margin-top:10px}
-    .opt .line{display:flex;gap:10px;justify-content:space-between;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 12px}
-    select,input[type="checkbox"]{pointer-events:auto}
-    label{display:flex;gap:8px;align-items:center;pointer-events:auto}
-    .hint{margin-top:10px;font-size:12px;opacity:.9;line-height:1.5}
-    /* mobile controls */
-    .mobile{position:absolute;left:0;right:0;bottom:14px;display:flex;justify-content:space-between;gap:12px;padding:0 14px;pointer-events:none}
-    .stick, .atk{pointer-events:auto;user-select:none;-webkit-user-select:none}
-    .stick{width:140px;height:140px;border-radius:999px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.18);position:relative}
-    .nub{width:64px;height:64px;border-radius:999px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.22);position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
-    .atk{width:120px;height:120px;border-radius:999px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;font-weight:900}
-    .atk span{opacity:.9}
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>火柴人格斗 - 纯前端 MVP</title>
+  <link rel="stylesheet" href="src/styles/main.css" />
 </head>
 <body>
-<div id="wrap">
-  <canvas id="c" width="1024" height="576"></canvas>
-</div>
-
-<div class="ui">
-  <div class="topbar">
-    <div class="panel">
-      <div class="row">
-        <div>
-          <div class="small">玩家1</div>
-          <div class="hpbar"><div id="hp1"></div></div>
+  <div id="app" class="app">
+    <section id="screen-start" class="screen active">
+      <div class="card">
+        <h1>火柴人格斗</h1>
+        <p>纯前端 2D 横版平台格斗小游戏</p>
+        <div class="button-group">
+          <button id="btn-start-battle" class="btn primary">开始游戏</button>
+          <button id="btn-open-settings" class="btn">角色选择 / 外观设置</button>
         </div>
-        <div class="score" id="score1">0</div>
+        <p class="tip">键盘：WASD / 方向键移动，J攻击，K跳跃，Enter开始。建议 iPad 横屏体验。</p>
       </div>
-    </div>
+    </section>
 
-    <div class="panel">
-      <div class="row" style="justify-content:center">
-        <div class="score" id="roundText">回合 1</div>
-        <div class="small" id="modeText">双人</div>
-      </div>
-      <div class="small" id="centerText">A/D/W/F · ←/→/↑/ / · ESC菜单</div>
-    </div>
-
-    <div class="panel">
-      <div class="row">
-        <div class="score" id="score2">0</div>
-        <div>
-          <div class="small" style="text-align:right">玩家2</div>
-          <div class="hpbar"><div id="hp2"></div></div>
+    <section id="screen-settings" class="screen">
+      <div class="card settings-card">
+        <h2>角色设置</h2>
+        <div class="grid-2">
+          <fieldset>
+            <legend>玩家1</legend>
+            <label>颜色 <input id="p1-color" type="color" value="#22c55e" /></label>
+            <label>武器
+              <select id="p1-weapon">
+                <option value="fist">拳套</option>
+                <option value="sword">短剑</option>
+                <option value="staff">短棍</option>
+              </select>
+            </label>
+            <label>血量 <input id="p1-hp" type="range" min="60" max="180" value="120" /><span id="p1-hp-v">120</span></label>
+            <label>攻击力 <input id="p1-atk" type="range" min="5" max="30" value="12" /><span id="p1-atk-v">12</span></label>
+            <label>速度 <input id="p1-speed" type="range" min="3" max="8" step="0.2" value="5" /><span id="p1-speed-v">5</span></label>
+          </fieldset>
+          <fieldset>
+            <legend>AI 敌人</legend>
+            <label>颜色 <input id="ai-color" type="color" value="#ef4444" /></label>
+            <label>武器
+              <select id="ai-weapon">
+                <option value="fist">拳套</option>
+                <option value="sword">短剑</option>
+                <option value="staff">短棍</option>
+              </select>
+            </label>
+            <label>血量 <input id="ai-hp" type="range" min="60" max="200" value="120" /><span id="ai-hp-v">120</span></label>
+            <label>攻击力 <input id="ai-atk" type="range" min="5" max="30" value="10" /><span id="ai-atk-v">10</span></label>
+            <label>速度 <input id="ai-speed" type="range" min="3" max="8" step="0.2" value="4.6" /><span id="ai-speed-v">4.6</span></label>
+            <label>难度 <input id="ai-difficulty" type="range" min="1" max="5" step="1" value="2" /><span id="ai-difficulty-v">2</span></label>
+          </fieldset>
+        </div>
+        <div class="button-group">
+          <button id="btn-begin" class="btn primary">开始对战</button>
+          <button id="btn-back-home" class="btn">返回首页</button>
         </div>
       </div>
-    </div>
+    </section>
+
+    <section id="screen-game" class="screen game-screen">
+      <div class="hud">
+        <div class="hp-wrap">
+          <div>玩家</div>
+          <div class="hp-bar"><div id="hp-player" class="hp-fill player"></div></div>
+        </div>
+        <div class="status" id="game-status">战斗中</div>
+        <div class="hp-wrap">
+          <div>AI</div>
+          <div class="hp-bar"><div id="hp-ai" class="hp-fill ai"></div></div>
+        </div>
+      </div>
+      <canvas id="game-canvas" width="1280" height="720" aria-label="火柴人格斗画布"></canvas>
+      <div class="mobile-controls" id="mobile-controls">
+        <div class="joystick" id="joystick-base"><div id="joystick-stick" class="stick"></div></div>
+        <div class="action-buttons">
+          <button id="btn-jump" class="round-btn">跳</button>
+          <button id="btn-attack" class="round-btn attack">攻</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-result" class="screen">
+      <div class="card">
+        <h2 id="result-title">胜利！</h2>
+        <p id="result-desc">你击败了敌人</p>
+        <div class="button-group">
+          <button id="btn-restart" class="btn primary">再来一局</button>
+          <button id="btn-home" class="btn">返回首页</button>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <div class="mobile" id="mobileUI" style="display:none">
-    <div class="stick" id="stick">
-      <div class="nub" id="nub"></div>
-    </div>
-    <div class="atk" id="atk"><span>攻击</span></div>
-  </div>
-
-  <div class="menu" id="menu">
-    <div class="card">
-      <h1>火柴人对决（原版风 Demo）</h1>
-      <div class="opt">
-        <div class="line">
-          <div>胜利所需分数</div>
-          <select id="toScore">
-            <option value="3">3</option>
-            <option value="5" selected>5</option>
-            <option value="7">7</option>
-          </select>
-        </div>
-        <div class="line">
-          <div>随机相同武器</div>
-          <label><input id="sameWeapon" type="checkbox" checked/> 开</label>
-        </div>
-        <div class="line">
-          <div>血条显示</div>
-          <label><input id="showHp" type="checkbox" checked/> 显示</label>
-        </div>
-        <div class="line">
-          <div>AI 难度</div>
-          <select id="ai">
-            <option value="1" selected>1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-          </select>
-        </div>
-        <div class="line">
-          <div>移动端摇杆位置</div>
-          <select id="stickSide">
-            <option value="left" selected>左</option>
-            <option value="right">右</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="btns">
-        <button class="b1" id="btnSolo">单人模式</button>
-        <button class="b2" id="btnDuo">双人模式</button>
-        <button class="b3" id="btnSurv">生存模式</button>
-      </div>
-
-      <div class="hint">
-        <b>规则：</b>平台对决，打空血或把对手打下去（掉出屏幕）都算赢该回合。<br/>
-        <b>键盘：</b>玩家1 A/D移动 W跳 F攻击；玩家2 ←/→移动 ↑跳 /攻击。ESC回菜单。<br/>
-        <b>像原版的关键：</b>武器随机刷新、击退随血量变大、掉下去直接算输回合。
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-(() => {
-  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-  const rand = (a,b)=>a+Math.random()*(b-a);
-  const randi = (a,b)=>Math.floor(rand(a,b+1));
-  const now = ()=>performance.now();
-  const isMobile = ()=>matchMedia("(pointer:coarse)").matches;
-
-  const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d');
-
-  const menu = document.getElementById('menu');
-  const hp1El = document.getElementById('hp1');
-  const hp2El = document.getElementById('hp2');
-  const score1El = document.getElementById('score1');
-  const score2El = document.getElementById('score2');
-  const roundText = document.getElementById('roundText');
-  const modeText = document.getElementById('modeText');
-  const centerText = document.getElementById('centerText');
-  const mobileUI = document.getElementById('mobileUI');
-
-  const toScoreEl = document.getElementById('toScore');
-  const sameWeaponEl = document.getElementById('sameWeapon');
-  const showHpEl = document.getElementById('showHp');
-  const aiEl = document.getElementById('ai');
-  const stickSideEl = document.getElementById('stickSide');
-
-  const W = canvas.width, H = canvas.height;
-  const GRAV = 2200;
-  const RINGOUT_Y = H + 110;
-  const FRICTION = 0.86;
-
-  const maps = [
-    { name:"熔岩", platforms:[{x:120,y:410,w:360,h:20},{x:544,y:410,w:360,h:20},{x:412,y:290,w:200,h:18}], hazard:{y:520}},
-    { name:"冰原", platforms:[{x:160,y:430,w:704,h:22},{x:220,y:320,w:220,h:18},{x:584,y:320,w:220,h:18}], hazard:{y:530}},
-    { name:"高台", platforms:[{x:120,y:450,w:300,h:20},{x:604,y:450,w:300,h:20},{x:362,y:360,w:300,h:18},{x:452,y:270,w:120,h:16}], hazard:{y:540}},
-  ];
-
-  const keys = new Set();
-  window.addEventListener('keydown', (e)=>{
-    if (e.key === 'Escape') { showMenu(); return; }
-    keys.add(e.key);
-  });
-  window.addEventListener('keyup', (e)=>keys.delete(e.key));
-
-  const stick = document.getElementById('stick');
-  const nub = document.getElementById('nub');
-  const atk = document.getElementById('atk');
-  let stickState = {active:false, dx:0, dy:0};
-  let mobileAttackPressed = false;
-
-  function setMobileLayout() {
-    if (!isMobile()) { mobileUI.style.display = "none"; return; }
-    mobileUI.style.display = "flex";
-    const side = stickSideEl.value;
-    mobileUI.style.flexDirection = (side === "left") ? "row" : "row-reverse";
-  }
-  function stickPosFromEvent(ev){
-    const rect = stick.getBoundingClientRect();
-    const x = (ev.clientX ?? ev.touches?.[0]?.clientX) - rect.left;
-    const y = (ev.clientY ?? ev.touches?.[0]?.clientY) - rect.top;
-    const cx = rect.width/2, cy = rect.height/2;
-    let dx = x - cx, dy = y - cy;
-    const maxR = rect.width*0.32;
-    const r = Math.hypot(dx,dy);
-    if (r > maxR) { dx = dx/r*maxR; dy = dy/r*maxR; }
-    nub.style.left = (cx+dx)+"px";
-    nub.style.top  = (cy+dy)+"px";
-    return {dx: dx/maxR, dy: dy/maxR};
-  }
-  function stickDown(ev){ ev.preventDefault(); stickState.active = true; const p = stickPosFromEvent(ev); stickState.dx=p.dx; stickState.dy=p.dy; }
-  function stickMove(ev){ if(!stickState.active) return; ev.preventDefault(); const p = stickPosFromEvent(ev); stickState.dx=p.dx; stickState.dy=p.dy; }
-  function stickUp(ev){ if(!stickState.active) return; ev.preventDefault(); stickState.active=false; stickState.dx=stickState.dy=0; nub.style.left="50%"; nub.style.top="50%"; }
-  stick.addEventListener('pointerdown', stickDown);
-  window.addEventListener('pointermove', stickMove, {passive:false});
-  window.addEventListener('pointerup', stickUp);
-
-  atk.addEventListener('pointerdown', (e)=>{ e.preventDefault(); mobileAttackPressed = true; });
-  window.addEventListener('pointerup', ()=> mobileAttackPressed = false);
-
-  let game = null;
-
-  function defaultPlayer(x, y, color){
-    return { x,y, vx:0, vy:0, w:28, h:64, color,
-      onGround:false, facing: 1, hp: 100, score: 0,
-      stun: 0, invuln: 0, weapon: null, attackCd: 0,
-      jumpBuffer: 0, coyote: 0.12, name:"" };
-  }
-
-  const WeaponDefs = {
-    sword: {name:"剑", type:"melee", range:52, dmg:16, kb:520, cd:260, dur:18},
-    spear: {name:"长枪", type:"melee", range:70, dmg:14, kb:600, cd:320, dur:16},
-    gun:   {name:"枪", type:"ranged", bulletSpd:920, dmg:10, kb:260, cd:220, ammo:22},
-    fire:  {name:"火球", type:"ranged", bulletSpd:720, dmg:14, kb:420, cd:420, ammo:14, splash:40},
-  };
-  const weaponPool = ["sword","spear","gun","fire"];
-  function makeWeapon(kind){
-    const d = WeaponDefs[kind];
-    return { kind, ...d, ammo: d.ammo ?? null, dur: d.dur ?? null };
-  }
-
-  function hideMenu(){ menu.style.display="none"; }
-  function showMenu(){ menu.style.display="grid"; }
-
-  function start(mode){
-    const opts = {
-      toScore: parseInt(toScoreEl.value,10),
-      sameWeapon: sameWeaponEl.checked,
-      showHp: showHpEl.checked,
-      ai: parseInt(aiEl.value,10),
-      stickSide: stickSideEl.value
-    };
-    setMobileLayout();
-
-    game = {
-      mode,
-      opts,
-      t: now(),
-      dt: 0,
-      map: maps[0],
-      p1: defaultPlayer(220,120,"#35d3ff"),
-      p2: defaultPlayer(W-220,120, mode==="surv" ? "#ff69b4" : "#ffd84a"),
-      enemies: [],
-      items: [],
-      projectiles: [],
-      round: 0,
-      nextItemAt: 0,
-      roundOver: false,
-      winBannerUntil: 0,
-      survWave: 0,
-      survNextWaveAt: 0,
-      lastWinner: null,
-    };
-    game.p1.name="玩家1";
-    game.p2.name= (mode==="solo") ? "AI" : (mode==="surv" ? "敌人" : "玩家2");
-
-    if (mode === "surv"){
-      game.p2.hp = 0;
-      game.survWave = 0;
-      game.survNextWaveAt = now() + 600;
-      modeText.textContent = "生存";
-    } else if (mode==="solo"){
-      modeText.textContent = "单人";
-    } else {
-      modeText.textContent = "双人";
-    }
-
-    resetRound();
-    hideMenu();
-  }
-
-  document.getElementById('btnSolo').onclick = ()=>start("solo");
-  document.getElementById('btnDuo').onclick  = ()=>start("duo");
-  document.getElementById('btnSurv').onclick = ()=>start("surv");
-
-  function aabb(ax,ay,aw,ah, bx,by,bw,bh){
-    return ax<bx+bw && ax+aw>bx && ay<by+bh && ay+ah>by;
-  }
-
-  function resolvePlatforms(p, platforms){
-    p.onGround = false;
-    for (const pl of platforms){
-      if (!aabb(p.x-p.w/2, p.y-p.h, p.w, p.h, pl.x, pl.y, pl.w, pl.h)) continue;
-      const prevY = p.y - p.vy*game.dt;
-      if (prevY <= pl.y && p.y >= pl.y && p.vy > 0){
-        p.y = pl.y;
-        p.vy = 0;
-        p.onGround = true;
-        p.coyote = 0.12;
-      } else {
-        const left = (p.x - p.w/2) - (pl.x + pl.w);
-        const right= (pl.x) - (p.x + p.w/2);
-        if (Math.abs(left) < Math.abs(right)) p.x -= left;
-        else p.x += right;
-        p.vx *= 0.6;
-      }
-    }
-  }
-
-  function applyMovement(p, inputX, wantJump){
-    if (p.stun > 0) return;
-    const accel = 1850;
-    const maxV = 520;
-    p.vx += inputX * accel * game.dt;
-    p.vx = clamp(p.vx, -maxV, maxV);
-    if (inputX !== 0) p.facing = Math.sign(inputX);
-
-    if (wantJump) p.jumpBuffer = 0.12;
-    if (p.jumpBuffer > 0) p.jumpBuffer -= game.dt;
-    if (p.coyote > 0) p.coyote -= game.dt;
-
-    if (p.jumpBuffer > 0 && (p.onGround || p.coyote > 0)){
-      p.vy = -820;
-      p.onGround = false;
-      p.coyote = 0;
-      p.jumpBuffer = 0;
-    }
-  }
-
-  function updatePlayer(p){
-    p.attackCd = Math.max(0, p.attackCd - game.dt*1000);
-    p.invuln = Math.max(0, p.invuln - game.dt*1000);
-    p.stun = Math.max(0, p.stun - game.dt*1000);
-
-    p.vy += GRAV * game.dt;
-    if (p.onGround) p.vx *= Math.pow(FRICTION, game.dt*60);
-
-    p.x += p.vx * game.dt;
-    p.y += p.vy * game.dt;
-
-    p.x = clamp(p.x, 30, W-30);
-    resolvePlatforms(p, game.map.platforms);
-    if (p.onGround) p.coyote = 0.12;
-
-    if (p.y > RINGOUT_Y) return "ringout";
-    return null;
-  }
-
-  function damageFactorByHp(hp){
-    const t = 1 - hp/100;
-    return 1 + t*1.35;
-  }
-
-  function doMelee(attacker, target){
-    const w = attacker.weapon;
-    const range = w.range;
-    const ax = attacker.x + attacker.facing*(range*0.55);
-    const ay = attacker.y - attacker.h*0.6;
-    const hitW = range;
-    const hitH = 44;
-
-    if (aabb(ax-hitW/2, ay-hitH/2, hitW, hitH, target.x-target.w/2, target.y-target.h, target.w, target.h)){
-      if (target.invuln > 0) return;
-      target.hp = Math.max(0, target.hp - w.dmg);
-      const fac = damageFactorByHp(target.hp);
-      target.vx += attacker.facing * w.kb * fac;
-      target.vy -= 260 * fac;
-      target.stun = 140;
-      target.invuln = 180;
-
-      if (w.dur != null){
-        w.dur -= 1;
-        if (w.dur <= 0) attacker.weapon = null;
-      }
-    }
-  }
-
-  function spawnProjectile(attacker){
-    const wpn = attacker.weapon;
-    const dir = attacker.facing;
-    const x = attacker.x + dir*26;
-    const y = attacker.y - attacker.h*0.55;
-    game.projectiles.push({
-      kind: wpn.kind,
-      owner: attacker,
-      x,y,
-      vx: dir*wpn.bulletSpd,
-      vy: -60 + rand(-30,30),
-      r: wpn.kind==="fire" ? 10 : 6,
-      dmg: wpn.dmg,
-      kb: wpn.kb,
-      splash: wpn.splash ?? 0,
-      life: 1.6
-    });
-
-    if (wpn.ammo != null){
-      wpn.ammo -= 1;
-      if (wpn.ammo <= 0) attacker.weapon = null;
-    }
-  }
-
-  function explode(x,y, radius, owner){
-    const victims = (game.mode !== "surv") ? [game.p1, game.p2] : [game.p1, ...game.enemies];
-    for (const v of victims){
-      if (v === owner) continue;
-      const dx = v.x - x;
-      const dy = (v.y - v.h*0.6) - y;
-      const d = Math.hypot(dx,dy);
-      if (d < radius){
-        if (v.invuln>0) continue;
-        const t = 1 - d/radius;
-        const dmg = Math.round(10 + 10*t);
-        v.hp = Math.max(0, v.hp - dmg);
-        const fac = damageFactorByHp(v.hp);
-        const dir = Math.sign(dx) || 1;
-        v.vx += dir * (420*t) * fac;
-        v.vy -= (260*t) * fac;
-        v.stun = 120;
-        v.invuln = 160;
-      }
-    }
-  }
-
-  function updateProjectiles(){
-    for (let i=game.projectiles.length-1;i>=0;i--){
-      const b = game.projectiles[i];
-      b.life -= game.dt;
-      b.vy += GRAV*0.25*game.dt;
-      b.x += b.vx*game.dt;
-      b.y += b.vy*game.dt;
-
-      let hit = false;
-      for (const pl of game.map.platforms){
-        if (aabb(b.x-b.r, b.y-b.r, b.r*2,b.r*2, pl.x,pl.y,pl.w,pl.h)){ hit = true; break; }
-      }
-
-      const targets = (game.mode==="surv") ? [game.p1, ...game.enemies] : [game.p1, game.p2];
-      for (const t of targets){
-        if (t === b.owner) continue;
-        if (aabb(b.x-b.r, b.y-b.r, b.r*2,b.r*2, t.x-t.w/2, t.y-t.h, t.w, t.h)){
-          hit = true;
-          if (t.invuln<=0){
-            t.hp = Math.max(0, t.hp - b.dmg);
-            const fac = damageFactorByHp(t.hp);
-            t.vx += Math.sign(b.vx) * b.kb * fac;
-            t.vy -= 180 * fac;
-            t.stun = 90;
-            t.invuln = 140;
-          }
-          break;
-        }
-      }
-
-      if (hit){
-        if (b.kind==="fire" && b.splash>0) explode(b.x,b.y,b.splash, b.owner);
-        game.projectiles.splice(i,1);
-        continue;
-      }
-
-      if (b.life<=0 || b.x<-80 || b.x>W+80 || b.y>H+120 || b.y<-120){
-        game.projectiles.splice(i,1);
-      }
-    }
-  }
-
-  function attack(attacker, target){
-    if (!attacker.weapon) return;
-    if (attacker.attackCd > 0 || attacker.stun>0) return;
-    const w = attacker.weapon;
-    attacker.attackCd = w.cd;
-    if (w.type === "melee") doMelee(attacker, target);
-    else spawnProjectile(attacker);
-  }
-
-  function spawnItem(){
-    const kind = weaponPool[randi(0, weaponPool.length-1)];
-    game.items.push({ kind, x: rand(200, W-200), y: rand(90, 170), vx: rand(-120,120), vy: rand(-40,40), r: 18 });
-  }
-
-  function updateItems(){
-    for (let i=game.items.length-1;i>=0;i--){
-      const it = game.items[i];
-      it.vy += GRAV*0.35*game.dt;
-      it.x += it.vx*game.dt;
-      it.y += it.vy*game.dt;
-
-      for (const pl of game.map.platforms){
-        if (aabb(it.x-it.r, it.y-it.r, it.r*2,it.r*2, pl.x,pl.y,pl.w,pl.h)){
-          it.y = pl.y - it.r;
-          it.vy *= -0.5;
-          it.vx *= 0.85;
-        }
-      }
-
-      const players = (game.mode==="surv") ? [game.p1, ...game.enemies] : [game.p1, game.p2];
-      for (const p of players){
-        if (aabb(it.x-it.r, it.y-it.r, it.r*2,it.r*2, p.x-p.w/2, p.y-p.h, p.w, p.h)){
-          if (game.opts.sameWeapon && game.mode!=="surv"){
-            game.p1.weapon = makeWeapon(it.kind);
-            game.p2.weapon = makeWeapon(it.kind);
-          } else {
-            p.weapon = makeWeapon(it.kind);
-          }
-          game.items.splice(i,1);
-          break;
-        }
-      }
-
-      if (it.y > H+150) game.items.splice(i,1);
-    }
-
-    if (!game.roundOver && now() >= game.nextItemAt){
-      spawnItem();
-      game.nextItemAt = now() + rand(900, 1600);
-    }
-  }
-
-  function aiControl(me, target, diff){
-    const aggress = 0.55 + diff*0.08;
-    const aim = 0.35 + diff*0.12;
-
-    let inputX = 0;
-    const dx = target.x - me.x;
-    if (Math.abs(dx) > 70) inputX = Math.sign(dx) * aggress;
-    else inputX = (Math.random()<0.15? (Math.random()<0.5?-1:1) : 0);
-
-    let wantJump = false;
-    if ((target.y < me.y - 30 && Math.random()<0.06*aim) || (me.onGround && Math.random()<0.01*diff)) wantJump = true;
-
-    if (me.x < 90) inputX = 1;
-    if (me.x > W-90) inputX = -1;
-
-    let wantAttack = false;
-    if (me.weapon){
-      const dist = Math.abs(dx);
-      if (me.weapon.type==="melee"){
-        if (dist < me.weapon.range*0.75 && Math.random()<0.12*aim) wantAttack = true;
-      } else {
-        if (dist < 520 && Math.random()<0.08*aim) wantAttack = true;
-      }
-    } else if (game.items[0]){
-      inputX = Math.sign(game.items[0].x - me.x) * 0.8;
-    }
-
-    return {inputX, wantJump, wantAttack};
-  }
-
-  function resetRound(){
-    game.round++;
-    roundText.textContent = `回合 ${game.round}`;
-    game.map = maps[randi(0, maps.length-1)];
-    game.items.length = 0;
-    game.projectiles.length = 0;
-
-    const leftSpawn  = {x: 220, y: 120};
-    const rightSpawn = {x: W-220, y: 120};
-
-    game.p1.x=leftSpawn.x; game.p1.y=leftSpawn.y; game.p1.vx=game.p1.vy=0; game.p1.hp=100; game.p1.stun=0; game.p1.invuln=600;
-    game.p2.x=rightSpawn.x; game.p2.y=rightSpawn.y; game.p2.vx=game.p2.vy=0; game.p2.hp=100; game.p2.stun=0; game.p2.invuln=600;
-
-    const same = game.opts.sameWeapon;
-    if (same){
-      const k = weaponPool[randi(0, weaponPool.length-1)];
-      game.p1.weapon = makeWeapon(k);
-      game.p2.weapon = makeWeapon(k);
-    } else {
-      game.p1.weapon = makeWeapon(weaponPool[randi(0, weaponPool.length-1)]);
-      game.p2.weapon = makeWeapon(weaponPool[randi(0, weaponPool.length-1)]);
-    }
-
-    // survival: clear & spawn wave soon
-    if (game.mode==="surv"){
-      game.enemies.length = 0;
-      game.survNextWaveAt = now() + 400;
-    }
-
-    game.nextItemAt = now() + rand(800, 1400);
-    game.roundOver = false;
-    game.winBannerUntil = 0;
-  }
-
-  function endRound(winner){
-    game.roundOver = true;
-    game.lastWinner = winner;
-    game.winBannerUntil = now() + 900;
-
-    if (winner === "p1") game.p1.score++;
-    if (winner === "p2") game.p2.score++;
-
-    score1El.textContent = game.p1.score;
-    score2El.textContent = game.p2.score;
-
-    // check match end (survival doesn't end by score)
-    if (game.mode !== "surv"){
-      if (game.p1.score >= game.opts.toScore || game.p2.score >= game.opts.toScore){
-        // match over => back to menu after short delay
-        setTimeout(()=>showMenu(), 800);
-        return;
-      }
-    }
-    setTimeout(()=>resetRound(), 650);
-  }
-
-  function spawnEnemy(){
-    const e = defaultPlayer(rand(140, W-140), 110, "#ff69b4");
-    e.name = "敌人";
-    e.weapon = makeWeapon(weaponPool[randi(0, weaponPool.length-1)]);
-    e.invuln = 300;
-    return e;
-  }
-
-  function updateSurvival(){
-    if (now() >= game.survNextWaveAt && game.enemies.length === 0){
-      game.survWave++;
-      const n = Math.min(1 + Math.floor(game.survWave/2), 4);
-      for (let i=0;i<n;i++) game.enemies.push(spawnEnemy());
-      game.survNextWaveAt = now() + 999999; // wait until cleared
-      centerText.textContent = `生存 波次 ${game.survWave} · 击败全部敌人`;
-    }
-  }
-
-  function drawStickman(p){
-    const x=p.x, y=p.y;
-    ctx.save();
-    ctx.translate(x, y - p.h*0.62);
-    ctx.strokeStyle = p.color;
-    ctx.lineWidth = 7;
-    ctx.lineCap = "round";
-
-    // head
-    ctx.beginPath();
-    ctx.arc(0, -p.h*0.32, 13, 0, Math.PI*2);
-    ctx.stroke();
-
-    // body
-    ctx.beginPath();
-    ctx.moveTo(0, -p.h*0.20);
-    ctx.lineTo(0, p.h*0.12);
-    ctx.stroke();
-
-    // arms
-    const armDir = p.facing;
-    ctx.beginPath();
-    ctx.moveTo(0, -p.h*0.10);
-    ctx.lineTo(armDir*22, 0);
-    ctx.stroke();
-
-    // legs
-    ctx.beginPath();
-    ctx.moveTo(0, p.h*0.12);
-    ctx.lineTo(-14, p.h*0.32);
-    ctx.moveTo(0, p.h*0.12);
-    ctx.lineTo(14, p.h*0.32);
-    ctx.stroke();
-
-    // weapon indicator (simple)
-    if (p.weapon){
-      ctx.fillStyle = "rgba(255,255,255,.9)";
-      ctx.font = "12px system-ui";
-      const label = p.weapon.name + (p.weapon.ammo!=null?` ${p.weapon.ammo}`:(p.weapon.dur!=null?` ${p.weapon.dur}`:""));
-      ctx.fillText(label, -26, -p.h*0.50);
-    }
-
-    ctx.restore();
-  }
-
-  function draw(){
-    // background accents
-    ctx.clearRect(0,0,W,H);
-    ctx.fillStyle = "rgba(0,0,0,.10)";
-    ctx.fillRect(0,0,W,H);
-
-    // hazard / lava band
-    ctx.fillStyle = "rgba(255,80,80,.55)";
-    const hz = game.map.hazard?.y ?? (H-40);
-    ctx.fillRect(0, hz, W, H-hz);
-
-    // platforms
-    for (const pl of game.map.platforms){
-      ctx.fillStyle = "rgba(0,0,0,.25)";
-      ctx.fillRect(pl.x, pl.y, pl.w, pl.h);
-      ctx.strokeStyle = "rgba(255,255,255,.18)";
-      ctx.strokeRect(pl.x+0.5, pl.y+0.5, pl.w-1, pl.h-1);
-    }
-
-    // items
-    for (const it of game.items){
-      ctx.beginPath();
-      ctx.fillStyle = "rgba(255,255,255,.85)";
-      ctx.arc(it.x, it.y, it.r, 0, Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle = "rgba(0,0,0,.65)";
-      ctx.font = "12px system-ui";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(WeaponDefs[it.kind].name, it.x, it.y);
-    }
-
-    // projectiles
-    for (const b of game.projectiles){
-      ctx.beginPath();
-      ctx.fillStyle = (b.kind==="fire") ? "rgba(255,200,60,.95)" : "rgba(255,255,255,.92)";
-      ctx.arc(b.x, b.y, b.r, 0, Math.PI*2);
-      ctx.fill();
-    }
-
-    // players/enemies
-    drawStickman(game.p1);
-    if (game.mode === "surv"){
-      for (const e of game.enemies) drawStickman(e);
-    } else {
-      drawStickman(game.p2);
-    }
-
-    // winner banner
-    if (game.roundOver && now() < game.winBannerUntil){
-      ctx.save();
-      ctx.fillStyle = "rgba(0,0,0,.35)";
-      ctx.fillRect(0,0,W,H);
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 64px system-ui";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      const txt = (game.lastWinner==="p1") ? "玩家1 得分!" : (game.lastWinner==="p2" ? (game.mode==="solo"?"AI 得分!":"玩家2 得分!") : "完成!");
-      ctx.fillText(txt, W/2, H/2);
-      ctx.restore();
-    }
-  }
-
-  function syncHud(){
-    const show = game?.opts?.showHp ?? true;
-    hp1El.parentElement.style.display = show ? "" : "none";
-    hp2El.parentElement.style.display = show ? "" : "none";
-
-    hp1El.style.width = clamp(game.p1.hp,0,100) + "%";
-    if (game.mode==="surv"){
-      // show wave as score2
-      score2El.textContent = game.survWave;
-      hp2El.style.width = "0%";
-      document.querySelector(".topbar .panel:last-child .small").textContent = "波次";
-    } else {
-      hp2El.style.width = clamp(game.p2.hp,0,100) + "%";
-      document.querySelector(".topbar .panel:last-child .small").textContent = "玩家2";
-    }
-    score1El.textContent = game.p1.score;
-    if (game.mode!=="surv") score2El.textContent = game.p2.score;
-  }
-
-  function step(t){
-    requestAnimationFrame(step);
-    if (!game || menu.style.display !== "none"){
-      // still draw background frame if game exists
-      if (game) draw();
-      return;
-    }
-    game.dt = Math.min(0.033, (t - game.t)/1000);
-    game.t = t;
-
-    // input player1
-    let p1x = 0, p1jump = false, p1atk = false;
-    if (isMobile()){
-      p1x = stickState.dx;
-      p1jump = stickState.dy < -0.55; // flick up
-      p1atk = mobileAttackPressed;
-    } else {
-      p1x = (keys.has("a")||keys.has("A")?-1:0) + (keys.has("d")||keys.has("D")?1:0);
-      p1jump = keys.has("w")||keys.has("W");
-      p1atk = keys.has("f")||keys.has("F");
-    }
-
-    applyMovement(game.p1, clamp(p1x,-1,1), p1jump);
-
-    // player2 / AI / survival enemies
-    if (game.mode==="duo"){
-      const p2x = (keys.has("ArrowLeft")?-1:0) + (keys.has("ArrowRight")?1:0);
-      const p2jump = keys.has("ArrowUp");
-      const p2atk = keys.has("/");
-      applyMovement(game.p2, clamp(p2x,-1,1), p2jump);
-      if (p2atk) attack(game.p2, game.p1);
-    } else if (game.mode==="solo"){
-      const ai = aiControl(game.p2, game.p1, game.opts.ai);
-      applyMovement(game.p2, clamp(ai.inputX,-1,1), ai.wantJump);
-      if (ai.wantAttack) attack(game.p2, game.p1);
-    } else if (game.mode==="surv"){
-      updateSurvival();
-      for (const e of game.enemies){
-        const ai = aiControl(e, game.p1, Math.min(5, 1 + Math.floor(game.survWave/2)));
-        applyMovement(e, clamp(ai.inputX,-1,1), ai.wantJump);
-        if (ai.wantAttack) attack(e, game.p1);
-      }
-    }
-
-    // attacks
-    if (p1atk){
-      if (game.mode==="surv"){
-        // attack nearest enemy
-        let nearest = null, best = 1e9;
-        for (const e of game.enemies){
-          const d = Math.abs(e.x - game.p1.x);
-          if (d < best){ best=d; nearest=e; }
-        }
-        if (nearest) attack(game.p1, nearest);
-      } else {
-        attack(game.p1, game.p2);
-      }
-    }
-
-    // update entities
-    const r1 = updatePlayer(game.p1);
-
-    if (game.mode==="surv"){
-      for (let i=game.enemies.length-1;i>=0;i--){
-        const e = game.enemies[i];
-        const rr = updatePlayer(e);
-        if (rr==="ringout" || e.hp<=0) game.enemies.splice(i,1);
-      }
-      if (r1==="ringout" || game.p1.hp<=0){
-        // survival end => back to menu with wave shown
-        game.roundOver = true;
-        game.lastWinner = null;
-        game.winBannerUntil = now() + 800;
-        setTimeout(()=>showMenu(), 900);
-      }
-    } else {
-      const r2 = updatePlayer(game.p2);
-
-      // win conditions per round
-      if (!game.roundOver){
-        if (r1==="ringout" || game.p1.hp<=0) endRound("p2");
-        else if (r2==="ringout" || game.p2.hp<=0) endRound("p1");
-      }
-    }
-
-    updateItems();
-    updateProjectiles();
-    syncHud();
-    draw();
-  }
-
-  // init
-  centerText.textContent = "A/D/W/F · ←/→/↑/ / · ESC菜单";
-  setMobileLayout();
-  requestAnimationFrame(step);
-})();
-</script>
+  <script type="module" src="src/js/main.js"></script>
 </body>
 </html>
